@@ -11,11 +11,13 @@
         --inactive: #969696;
         --shadow-color: #9b9b9b;
         color: #000;
-        --line-color:##1e1e1;
-        --control-invert:0%;
+        --line-color: #e1e1e1;
+        --control-invert: 0%;
         --side-invert: 25%;
         --search-invert: 50%;
-        --inactive-invert:75%;
+        --inactive-invert: 75%;
+        --side-border: #dedede;
+        --main-border: #ebebeb;
     }
 }
 
@@ -23,15 +25,17 @@
     * {
         --main-panel: #1e1e1e;
         --side-panel: #2a2a2a;
-        --hover-color: rgba(255, 255, 255, 0.15);
+        --hover-color: #ffffff26;
         --inactive: #969696;
         --shadow-color: transparent;
         color: #fff;
-        --line-color:#272a31;
-        --control-invert:100%;
+        --line-color: #272a31;
+        --control-invert: 100%;
         --side-invert: 75%;
         --search-invert: 50%;
-        --inactive-invert:33%;
+        --inactive-invert: 33%;
+        --side-border: #3e3e3e;
+        --main-border: #2e2e2e;
     }
 }
 

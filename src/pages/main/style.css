@@ -22,7 +22,9 @@ body {
     background-color: var(--side-panel);
     width: 220px;
     border-radius: 10px 0 0 10px;
-    height: 100%;
+    height: calc(100% - 2px);
+    border: 1px solid var(--side-border);
+    border-right: none;
 }
 
 #navbar section {
@@ -62,12 +64,14 @@ body {
 main {
     background-color: var(--main-panel);
     width: calc(100% - 220px);
-    height: 100%;
+    height: calc(100% - 2px);
     padding: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     border-radius: 0 10px 10px 0;
+    border: 1px solid var(--main-border);
+    border-left: none;
 }
 
 main .top-bar {
@@ -153,7 +157,7 @@ main .path-bar .arrow-img-inactive {
     cursor: default;
 }
 
-main .path-bar .arrow-img-active img{ 
+main .path-bar .arrow-img-active img {
     filter: invert(var(--control-invert));
 }
 
@@ -310,8 +314,9 @@ main .footer .buttons .view-button {
     justify-content: center;
     align-items: center;
     border-radius: 7.5px;
-    
+
 }
-main .footer .buttons .view-button img{
-    filter:invert(var(--side-invert))
+
+main .footer .buttons .view-button img {
+    filter: invert(var(--side-invert))
 }
