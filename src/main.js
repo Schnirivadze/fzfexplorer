@@ -1,9 +1,10 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
-try {
-  require('electron-reloader')(module)
-} catch (_) {}
+// try {
+//   require('electron-reloader')(module)
+// } catch (_) { }
+// const mainWindow
 function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 800,
@@ -11,13 +12,18 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     },
-    transparent: true, 
+    transparent: true,
     frame: false,
+    'minHeight': 450,
+    'minWidth': 850,
   });
 
   mainWindow.loadFile(path.join(__dirname, 'pages/main/index.html'));
-  // mainWindow.webContents.openDevTools();
+  ipcMain.handle('minimize', () => mainWindow.minimize());
+  ipcMain.handle('maximize', () => mainWindow.maximize());
+  ipcMain.handle('close', () => app.quit());
 }
+
 
 app.whenReady().then(createWindow);
 
