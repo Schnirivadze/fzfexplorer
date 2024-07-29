@@ -1,0 +1,317 @@
+body {
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    overflow: hidden;
+}
+
+
+
+.logo {
+    background-color: red;
+    width: 65%;
+    margin-left: 5%;
+    margin-top: 5%;
+    height: 50px;
+    margin-bottom: 11px;
+}
+
+#navbar {
+    background-color: var(--side-panel);
+    width: 220px;
+    border-radius: 10px 0 0 10px;
+    height: 100%;
+}
+
+#navbar section {
+    margin-left: 20px;
+    width: 180px;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+#navbar section header {
+    color: var(--inactive);
+    font-size: 0.85em;
+    margin-bottom: 10px;
+}
+
+#navbar section .navbar-list-element {
+    margin: 0;
+    margin-bottom: 0px;
+    height: 36px;
+    width: 180px;
+    padding-left: 15px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    font-weight: 500;
+    font-size: 0.85em;
+}
+
+
+#navbar section .navbar-icon {
+    width: 15px;
+    margin-right: 10px;
+    filter: invert(var(--side-invert));
+}
+
+main {
+    background-color: var(--main-panel);
+    width: calc(100% - 220px);
+    height: 100%;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 0 10px 10px 0;
+}
+
+main .top-bar {
+    -webkit-app-region: drag;
+    width: calc(100% - 25px);
+    height: 60px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 25px;
+}
+
+main .top-bar .current-folder {
+    font-weight: 900;
+    font-size: 1.085em;
+    margin-top: 15px;
+}
+
+main .top-bar .controls-wrapper {
+    margin-right: 14px;
+    display: flex;
+    justify-content: space-between;
+    width: 100px;
+    height: 30px;
+    margin-bottom: 5px;
+    -webkit-app-region: no-drag;
+}
+
+main .top-bar .controls-wrapper .control-button {
+    width: 29px;
+    height: 29px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+}
+
+main .top-bar .controls-wrapper .control-button img {
+    filter: invert(var(--control-invert));
+}
+
+main .top-bar .controls-wrapper .control-button-close:hover {
+    background-color: #f45325;
+}
+
+main .top-bar .controls-wrapper .control-button-close img {
+    transition: filter 0.1s;
+}
+
+main .top-bar .controls-wrapper .control-button-close:hover img {
+    filter: invert(100%);
+}
+
+main .top-bar .controls-wrapper .control-button .controls {
+    width: 11px;
+    height: 11px;
+}
+
+main .path-bar {
+    width: calc(100% - 50px);
+    height: 45px;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    border-bottom: 2px solid var(--line-color);
+}
+
+main .path-bar .path-control-button {
+    height: 30px;
+    width: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+}
+
+main .path-bar .path-control-button img {
+    height: 14px;
+}
+
+main .path-bar .arrow-img-inactive {
+    cursor: default;
+}
+
+main .path-bar .arrow-img-active img{ 
+    filter: invert(var(--control-invert));
+}
+
+main .path-bar .arrow-img-inactive img {
+    filter: invert(var(--inactive-invert));
+}
+
+main .path-bar .arrow-img-inactive:hover {
+    background-color: transparent;
+}
+
+main .path-bar .control-arrows {
+    width: 115px;
+    height: 30px;
+    display: flex;
+    flex-direction: row;
+    margin-left: -10px;
+    margin-bottom: 2px;
+    justify-content: space-between;
+}
+
+main .path-bar .path-wrapper {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    width: calc(100% - 115px - 175px);
+    margin-left: 7px;
+}
+
+main .path-bar .path-wrapper .path-button {
+    padding: 7.5px;
+    padding-right: 7.5px;
+    padding-left: 7.5px;
+    border-radius: 10px;
+    font-size: 0.9em;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+
+main .path-bar .path-wrapper span {
+    font-size: 0.9em;
+}
+
+main .path-bar .path-wrapper .path-arrow img {
+    width: 7px;
+    filter: invert(var(--inactive-invert));
+}
+
+main .path-bar .search-bar {
+    margin-left: 12.5px;
+    width: 175px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 100%;
+}
+
+main .path-bar .search-bar .search-icon {
+    margin-left: 17.5px;
+    filter: invert(var(--search-invert));
+}
+
+main .path-bar .search-bar .search-bar-input {
+    background-color: transparent;
+    height: 100%;
+    border: 0;
+    padding-left: 13px;
+    font-size: 1.05em;
+    font-weight: 500;
+    outline: none;
+}
+
+main .contents-panel {
+    width: 100%;
+    height: max-content;
+    flex: 1 1 auto;
+}
+
+main .contents-panel .contents-wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+}
+
+main .contents-panel .item {
+    box-sizing: border-box;
+    width: 100px;
+    height: 100px;
+    margin-left: 15px;
+    margin-top: 14px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 1em;
+}
+
+main .contents-panel .item:hover {
+    background-color: var(--hover-color);
+
+}
+
+main .contents-panel .item img {
+    filter: drop-shadow(0px 1px 01px var(--shadow-color));
+    width: 65px;
+    margin-top: 7.5px;
+}
+
+main .contents-panel .item .name {
+    margin-top: 2px;
+    font-size: 0.85em;
+}
+
+main .footer {
+    width: 100%;
+    height: 50px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+main .footer .info {
+    width: 250px;
+    display: flex;
+    flex-direction: row;
+}
+
+main .footer .info p {
+    margin-left: 25px;
+    font-size: 0.94em;
+}
+
+main .footer .buttons {
+    margin-top: 2px;
+    height: 30px;
+    width: 62.5px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-right: 15px;
+}
+
+main .footer .buttons .view-button {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 7.5px;
+    
+}
+main .footer .buttons .view-button img{
+    filter:invert(var(--side-invert))
+}

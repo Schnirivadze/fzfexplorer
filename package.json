@@ -1,0 +1,29 @@
+{
+  "name": "fzfexplorer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Schnirivadze/fzfexplorer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Schnirivadze/fzfexplorer/issues"
+  },
+  "homepage": "https://github.com/Schnirivadze/fzfexplorer#readme",
+  "dependencies": {
+    "fzf": "^0.5.2",
+    "open": "^10.1.0"
+  },
+  "devDependencies": {
+    "electron": "^31.3.0",
+    "electron-reloader": "^1.2.3"
+  }
+}

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Explorer</title>
+  <link rel="stylesheet" href="../global.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <nav id="navbar">
+    <div class="logo"></div>
+    <section id="quick-access">
+      <header>Quick access</header>
+      <button class="navbar-list-element"><img src="../../img/desktop-icon.svg" class="navbar-icon">Desktop</button>
+      <button class="navbar-list-element"><img src="../../img/documents-icon.svg" class="navbar-icon">Documents</button>
+      <button class="navbar-list-element"><img src="../../img/music-icon.svg" class="navbar-icon">Music</button>
+      <button class="navbar-list-element"><img src="../../img/pictures-icon.svg" class="navbar-icon">Pictures</button>
+      <button class="navbar-list-element"><img src="../../img/videos-icon.svg" class="navbar-icon">Videos</button>
+      <button class="navbar-list-element"><img src="../../img/downloads-icons.svg" class="navbar-icon">Downloads</button>
+    </section>
+    <section id="devices">
+      <header>This PC</header>
+      <button class="navbar-list-element"><img src="../../img/Drive.svg" class="navbar-icon">Local Disk (C:)</button>
+      <button class="navbar-list-element"><img src="../../img/Drive.svg" class="navbar-icon">Local Disk (D:)</button>
+    </section>
+  </nav>
+
+  <main id="main-content">
+    <section class="top-bar">
+      <span class="current-folder">Local Disk(C:)</span>
+      <section class="controls-wrapper">
+        <button class="control-button"> <img src="../../img/minimize-icon.svg" class="controls"> </button>
+        <button class="control-button"> <img src="../../img/maximize-icon.svg" class="controls"> </button>
+        <button class="control-button control-button-close"> <img src="../../img/close-icon.svg" class="controls"> </button>
+      </section>
+    </section>
+    <section class="path-bar">
+      <section class="control-arrows">
+        <button class="back-arrow path-control-button arrow-img-active">
+          <img src="../../img/left-arrow.svg" style="margin-right: 2px;">
+        </button>
+        <button class="forward-arrow path-control-button arrow-img-inactive">
+          <img src="../../img/right-arrow.svg" style="margin-left: 2px;">
+        </button>
+
+        <button class="up-arrow path-control-button arrow-img-inactive">
+          <img src="../../img/up-directory-icon.svg">
+        </button>
+      </section>
+      <section class="path-wrapper">
+        <button class="path-button">This PC</button>
+        <span class="path-arrow"><img src="../../img/right-arrow.svg"></span>
+        <button class="path-button">Local Disk (C:)</button>
+        <span class="path-arrow"><img src="../../img/right-arrow.svg"></span>
+      </section>
+      <section class="search-bar">
+        <img src="../../img/search-icon.svg" class="search-icon">
+        <input type="text" class="search-bar-input" placeholder="Search">
+      </section>
+    </section>
+    <section class="contents-panel">
+      <div class="contents-wrapper">
+        <button class="item">
+          <img src="../../img/folder.svg">
+          <p class="name">PrefLogs</p>
+        </button>
+        
+      </div>
+    </section>
+    <section class="footer">
+      <section class="info">
+        <p id="items-ammount">4 items</p>
+        <p id="items-selected">1 item selected</p>
+      </section>
+      <section class="buttons">
+        <button class="view-button">
+          <img src="../../img/list-view-icon.svg">
+        </button>
+        <button class="view-button">
+          <img src="../../img/grid-view-icon.svg">
+        </button>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

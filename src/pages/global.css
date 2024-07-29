@@ -1,0 +1,47 @@
+* {
+    font-family: "Segoe UI", Arial, sans-serif;
+    user-select: none;
+}
+
+@media (prefers-color-scheme: light) {
+    * {
+        --main-panel: #fff;
+        --side-panel: #f2f2f2;
+        --hover-color: #0000001a;
+        --inactive: #969696;
+        --shadow-color: #9b9b9b;
+        color: #000;
+        --line-color:##1e1e1;
+        --control-invert:0%;
+        --side-invert: 25%;
+        --search-invert: 50%;
+        --inactive-invert:75%;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    * {
+        --main-panel: #1e1e1e;
+        --side-panel: #2a2a2a;
+        --hover-color: rgba(255, 255, 255, 0.15);
+        --inactive: #969696;
+        --shadow-color: transparent;
+        color: #fff;
+        --line-color:#272a31;
+        --control-invert:100%;
+        --side-invert: 75%;
+        --search-invert: 50%;
+        --inactive-invert:33%;
+    }
+}
+
+button {
+    border: none;
+    background-color: transparent;
+    transition: background-color 0.1s ease-in-out;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: var(--hover-color);
+}
