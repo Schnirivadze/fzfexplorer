@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { shell } = require('electron')
+const os = require('os');
 
 function createWindow() {
   const window = new BrowserWindow({
@@ -49,3 +50,4 @@ ipcMain.handle('open-file', async (event, filePath) => {
     console.error('Error opening file:', err);
   }
 });
+ipcMain.handle('get-home-directory',()=>{return os.homedir()})

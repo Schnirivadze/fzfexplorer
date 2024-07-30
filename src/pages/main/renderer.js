@@ -1,45 +1,68 @@
-var currentFolder = "/home/veniamin/Projects"
+document.addEventListener("DOMContentLoaded", async () => {
+    await initializeApp();
+});
+var currentFolder = "";
+async function initializeApp() {
+    try {
+        var currentFolder = await window.electronAPI.getHomeDirectory();
+        console.log(`Current folder set to: ${currentFolder}`);
 
-document.addEventListener("DOMContentLoaded", () => { loadDirectory(currentFolder) });
-document.getElementById("window-button-minimize").addEventListener("click", () => { window.electronAPI.minimize() });
-document.getElementById("window-button-maximize").addEventListener("click", () => { window.electronAPI.maximize() });
-document.getElementById("window-button-close").addEventListener("click", () => { window.electronAPI.close() });
-document.getElementsByTagName("body")[0].addEventListener("keypress", (event) => { if (event.code == "Backslash") { window.electronAPI.openDevTools() } });
-document.getElementById("back-arrow").addEventListener("click", () => { loadDirectory(getParentDirectory(currentFolder)); });
+        await loadDirectory(currentFolder);
+
+        // Event listeners
+        document.getElementById("window-button-minimize").addEventListener("click", window.electronAPI.minimize);
+        document.getElementById("window-button-maximize").addEventListener("click", window.electronAPI.maximize);
+        document.getElementById("window-button-close").addEventListener("click", window.electronAPI.close);
+        document.getElementsByTagName("body")[0].addEventListener("keypress", (event) => { if (event.code === "Backslash") window.electronAPI.openDevTools(); });
+        document.getElementById("back-arrow").addEventListener("click", goUpDirectory);
+    } catch (error) {
+        console.error("Failed to set current folder:", error);
+    }
+}
 
 async function loadDirectory(directoryPath) {
-    console.log(`loading dirrectory ${directoryPath}`)
+    currentFolder = directoryPath;
+    console.log(`Loading directory ${directoryPath}`);
     const fileContainer = document.getElementById('contents');
     fileContainer.innerHTML = '';
 
-    const files = await window.electronAPI.listFiles(directoryPath);
-    files.forEach(file => {
-        var item = document.createElement("button");
-        item.classList = ["item"];
+    try {
+        const files = await window.electronAPI.listFiles(directoryPath);
+        files.forEach(file => {
+            var item = document.createElement("button");
+            item.classList.add("item");
 
-        var icon = document.createElement("img")
-        var name = document.createElement("p")
-        name.classList = ["name"]
-        name.innerText = file.name
+            var icon = document.createElement("img");
+            var name = document.createElement("p");
+            name.classList.add("name");
+            name.innerText = file.name;
 
-        if (file.isDirectory) {
-            icon.src = "../../img/folder.svg"
-            item.addEventListener('click', () => { loadDirectory(file.path); })
-        } else {
-            icon.src = "../../img/text-x-generic.svg"
-            item.addEventListener('click', () => { window.electronAPI.openFile(file.path); })
-        }
+            if (file.isDirectory) {
+                icon.src = "../../img/folder.svg";
+                item.addEventListener('click', () => { loadDirectory(file.path); });
+            } else {
+                icon.src = "../../img/text-x-generic.svg";
+                item.addEventListener('click', () => { window.electronAPI.openFile(file.path); });
+            }
 
-        item.appendChild(icon);
-        item.appendChild(name);
+            item.appendChild(icon);
+            item.appendChild(name);
+            fileContainer.appendChild(item);
+        });
+    } catch (error) {
+        console.error(`Failed to load directory: ${directoryPath}`, error);
+    }
+    console.log(`current directory is ${currentFolder}`);
 
-        fileContainer.appendChild(item);
-    });
-    currentFolder = directoryPath;
 }
 
 function getParentDirectory(directoryPath) {
-    const parts = directoryPath.split('/');
+    const defaultPath = (window.electronAPI.platform == "win32") ? "C:\\" : "/"
+    const splitter = (window.electronAPI.platform == "win32") ? '\\' : '/'
+    const parts = directoryPath.split(splitter);
     parts.pop(); // Remove the last part of the path
-    return parts.join('/') || '/'; // Join the remaining parts and handle root directory
+    return parts.join(splitter) || defaultPath; // Join the remaining parts and handle root directory
+}
+function goUpDirectory() {
+    loadDirectory(getParentDirectory(currentFolder));
 }

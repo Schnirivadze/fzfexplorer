@@ -7,4 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     maximize: () => ipcRenderer.invoke('maximize'),
     close: () => ipcRenderer.invoke('close'),
     openDevTools: () => ipcRenderer.invoke('open-dev-tools'),
+    getHomeDirectory: () => ipcRenderer.invoke('get-home-directory'),
+
+    platform: process.platform,
 });
