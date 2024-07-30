@@ -8,6 +8,7 @@ async function initializeApp() {
         console.log(`Current folder set to: ${currentFolder}`);
 
         await loadDirectory(currentFolder);
+        await setUpQuickAccess();
 
         // Event listeners
         document.getElementById("window-button-minimize").addEventListener("click", window.electronAPI.minimize);
@@ -63,6 +64,32 @@ function getParentDirectory(directoryPath) {
     parts.pop(); // Remove the last part of the path
     return parts.join(splitter) || defaultPath; // Join the remaining parts and handle root directory
 }
+
 function goUpDirectory() {
     loadDirectory(getParentDirectory(currentFolder));
+}
+
+async function setUpQuickAccess() {
+    var homeFolder = await window.electronAPI.getHomeDirectory();
+    const folders = ["Desktop", "Documents", "Music", "Pictures", "Videos", "Downloads"]
+    if (window.electronAPI.platform == "win32") {
+        folders.forEach(folder => {
+            if (window.electronAPI.pathExists(homeFolder + "\\" + folder)) {
+                document.getElementById("quick-access-" + folder.toLowerCase()).addEventListener("click", () => { loadDirectory(homeFolder + "\\" + folder); });
+            } else {
+                document.getElementById("quick-access-" + folder.toLowerCase()).remove()
+            }
+        });
+        document.getElementById("quick-access-trash").addEventListener("click", () => { loadDirectory("C:\\$Recycle.Bin"); });
+    } else {
+        folders.forEach(folder => {
+
+            if (window.electronAPI.pathExists(homeFolder + "/" + folder)) {
+                document.getElementById("quick-access-" + folder.toLowerCase()).addEventListener("click", () => { loadDirectory(homeFolder + "/" + folder); });
+            } else {
+                document.getElementById("quick-access-" + folder.toLowerCase()).remove()
+            }
+        });
+        document.getElementById("quick-access-trash").addEventListener("click", () => { loadDirectory(homeFolder + "/.local/share/Trash/files"); });
+    }
 }

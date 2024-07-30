@@ -22,7 +22,7 @@ function createWindow() {
   ipcMain.handle('maximize', () => window.maximize());
   ipcMain.handle('close', () => app.quit());
   ipcMain.handle('open-dev-tools', () => { window.webContents.openDevTools() });
-
+  ipcMain.handle('path-exists',(path)=>{fs.existsSync(path)})
 }
 
 app.whenReady().then(createWindow);
