@@ -85,7 +85,7 @@ main .top-bar {
     padding-left: 25px;
 }
 
-main .top-bar .current-folder {
+main .top-bar #current-folder {
     font-weight: 900;
     font-size: 1.085em;
     margin-top: 15px;

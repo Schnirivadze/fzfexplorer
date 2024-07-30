@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const { shell } = require('electron')
 const os = require('os');
+const drivelist = require('drivelist');
 
 function createWindow() {
   const window = new BrowserWindow({
@@ -22,7 +23,9 @@ function createWindow() {
   ipcMain.handle('maximize', () => window.maximize());
   ipcMain.handle('close', () => app.quit());
   ipcMain.handle('open-dev-tools', () => { window.webContents.openDevTools() });
-  ipcMain.handle('path-exists',(path)=>{fs.existsSync(path)})
+  ipcMain.handle('path-exists', (path) => { fs.existsSync(path) })
+  ipcMain.handle('drive-list', drivelist.list)
+  ipcMain.handle('username', () => { return os.userInfo().username })
 }
 
 app.whenReady().then(createWindow);
@@ -50,4 +53,4 @@ ipcMain.handle('open-file', async (event, filePath) => {
     console.error('Error opening file:', err);
   }
 });
-ipcMain.handle('get-home-directory',()=>{return os.homedir()})
+ipcMain.handle('get-home-directory', () => { return os.homedir() })

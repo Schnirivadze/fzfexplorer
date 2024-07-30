@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     openDevTools: () => ipcRenderer.invoke('open-dev-tools'),
     getHomeDirectory: () => ipcRenderer.invoke('get-home-directory'),
     pathExists: () => ipcRenderer.invoke('path-exists'),
+    driveList: () => ipcRenderer.invoke('drive-list'),
+    getUsername: () => ipcRenderer.invoke('username'),
 
     platform: process.platform,
 });

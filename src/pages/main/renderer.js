@@ -1,9 +1,11 @@
-document.addEventListener("DOMContentLoaded", async () => {
-    await initializeApp();
-});
+const splitter = (window.electronAPI.platform == "win32") ? '\\' : '/'
 var currentFolder = "";
+
+document.addEventListener("DOMContentLoaded", async () => { await initializeApp(); });
+
 async function initializeApp() {
     try {
+        getDrives();
         var currentFolder = await window.electronAPI.getHomeDirectory();
         console.log(`Current folder set to: ${currentFolder}`);
 
@@ -59,7 +61,6 @@ async function loadDirectory(directoryPath) {
 
 function getParentDirectory(directoryPath) {
     const defaultPath = (window.electronAPI.platform == "win32") ? "C:\\" : "/"
-    const splitter = (window.electronAPI.platform == "win32") ? '\\' : '/'
     const parts = directoryPath.split(splitter);
     parts.pop(); // Remove the last part of the path
     return parts.join(splitter) || defaultPath; // Join the remaining parts and handle root directory
@@ -91,5 +92,31 @@ async function setUpQuickAccess() {
             }
         });
         document.getElementById("quick-access-trash").addEventListener("click", () => { loadDirectory(homeFolder + "/.local/share/Trash/files"); });
+    }
+}
+
+async function getDrives() {
+    try {
+
+        const drives = await window.electronAPI.driveList();
+        if (window.electronAPI.platform != "win32") {
+            drives.forEach((drive) => {
+                const icon = (drive.isRemovable) ? "media-removable" : "Drive"
+                drive.mountpoints.forEach((mountpoint) => {
+                    const lastPart = mountpoint.path.substring(mountpoint.path.lastIndexOf(splitter) + 1)
+                    if (mountpoint.path.includes(splitter)) document.getElementById("devices").innerHTML += `<button class="navbar-list-element" onclick="loadDirectory('${mountpoint.path}');document.getElementById('current-folder').innerText='${(lastPart == "") ? "This Drive" : lastPart}';"><img src="../../img/${icon}.svg" class="navbar-icon">${(lastPart == "") ? "This Drive" : lastPart}</button>`
+
+                });
+            });
+        } else {
+            drives.forEach((drive) => {
+                const icon = (drive.isRemovable) ? "media-removable" : "Drive"
+                drive.mountpoints.forEach((mountpoint) => {
+                    document.getElementById("devices").innerHTML += `<button class="navbar-list-element" onclick="loadDirectory('${mountpoint.path}');document.getElementById('current-folder').innerText='${mountpoint.path}';"><img src="../../img/${icon}.svg" class="navbar-icon">${mountpoint.path}</button>`
+                });
+            });
+        }
+    } catch (err) {
+        console.error(`Error: ${err}`);
     }
 }
