@@ -238,6 +238,13 @@ main .contents-panel {
     width: 100%;
     height: max-content;
     flex: 1 1 auto;
+    max-height: calc(100% - 155px);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+main .contents-panel::-webkit-scrollbar {
+    display: none;
 }
 
 main .contents-panel .contents-wrapper {
