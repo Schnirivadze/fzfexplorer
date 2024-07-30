@@ -19,8 +19,7 @@
   },
   "homepage": "https://github.com/Schnirivadze/fzfexplorer#readme",
   "dependencies": {
-    "fzf": "^0.5.2",
-    "open": "^10.1.0"
+    "fzf": "^0.5.2"
   },
   "devDependencies": {
     "electron": "^31.3.0",

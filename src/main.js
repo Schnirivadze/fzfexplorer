@@ -1,12 +1,10 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
-// try {
-//   require('electron-reloader')(module)
-// } catch (_) { }
-// const mainWindow
+const { shell } = require('electron')
+
 function createWindow() {
-  const mainWindow = new BrowserWindow({
+  const window = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
@@ -18,12 +16,13 @@ function createWindow() {
     'minWidth': 850,
   });
 
-  mainWindow.loadFile(path.join(__dirname, 'pages/main/index.html'));
-  ipcMain.handle('minimize', () => mainWindow.minimize());
-  ipcMain.handle('maximize', () => mainWindow.maximize());
+  window.loadFile(path.join(__dirname, 'pages/main/index.html'));
+  ipcMain.handle('minimize', () => window.minimize());
+  ipcMain.handle('maximize', () => window.maximize());
   ipcMain.handle('close', () => app.quit());
-}
+  ipcMain.handle('open-dev-tools', () => { window.webContents.openDevTools() });
 
+}
 
 app.whenReady().then(createWindow);
 
@@ -42,14 +41,11 @@ ipcMain.handle('list-files', async (event, directoryPath) => {
   });
 });
 
-// Handle the open-file IPC message
-ipcMain.on('open-file', async (event, filePath) => {
+ipcMain.handle('open-file', async (event, filePath) => {
   try {
-    console.log(filePath)
-    const { default: open } = await import('open'); // Use dynamic import to load the module
-    await open(filePath);
+    console.log(`Opening file ${filePath}`)
+    await shell.openPath(filePath);
   } catch (err) {
     console.error('Error opening file:', err);
   }
 });
-
