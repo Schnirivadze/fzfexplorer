@@ -245,6 +245,17 @@ main .contents-panel::-webkit-scrollbar {
     display: none;
 }
 
+main .contents-panel .folder-empty {
+    font-size: 2em;
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 155px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+}
+
 main .contents-panel .contents-wrapper {
     display: flex;
     flex-direction: row;

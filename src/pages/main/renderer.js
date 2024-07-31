@@ -31,29 +31,33 @@ async function loadDirectory(directoryPath) {
 
     try {
         const files = await window.electronAPI.listFiles(directoryPath);
-        files.forEach(file => {
-            if (file != undefined) {
-                var item = document.createElement("button");
-                item.classList.add("item");
+        if (files.filter((file) => file != undefined).length != 0) {
+            files.forEach(file => {
+                if (file != undefined) {
+                    var item = document.createElement("button");
+                    item.classList.add("item");
 
-                var icon = document.createElement("img");
-                var name = document.createElement("p");
-                name.classList.add("name");
-                name.innerText = file.name;
+                    var icon = document.createElement("img");
+                    var name = document.createElement("p");
+                    name.classList.add("name");
+                    name.innerText = file.name;
 
-                if (file.isDirectory) {
-                    icon.src = "../../img/folder.svg";
-                    item.addEventListener('click', () => { loadDirectory(file.path); });
-                } else {
-                    icon.src = "../../img/text-x-generic.svg";
-                    item.addEventListener('click', () => { window.electronAPI.openFile(file.path); });
+                    if (file.isDirectory) {
+                        icon.src = "../../img/folder.svg";
+                        item.addEventListener('click', () => { loadDirectory(file.path); });
+                    } else {
+                        icon.src = "../../img/text-x-generic.svg";
+                        item.addEventListener('click', () => { window.electronAPI.openFile(file.path); });
+                    }
+
+                    item.appendChild(icon);
+                    item.appendChild(name);
+                    fileContainer.appendChild(item);
                 }
-
-                item.appendChild(icon);
-                item.appendChild(name);
-                fileContainer.appendChild(item);
-            }
-        });
+            });
+        } else {
+            fileContainer.innerHTML = `<h1 class="folder-empty">Folder is empty</h1>`
+        }
     } catch (error) {
         console.error(`Failed to load directory: ${directoryPath}`, error);
     }
