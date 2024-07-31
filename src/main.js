@@ -37,17 +37,20 @@ app.on('window-all-closed', function () {
 ipcMain.handle('list-files', async (event, directoryPath) => {
   return fs.readdirSync(directoryPath).map(file => {
     const filePath = path.join(directoryPath, file);
-    return {
-      name: file,
-      path: filePath,
-      isDirectory: fs.statSync(filePath).isDirectory()
-    };
+    try {
+      return {
+        name: file,
+        path: filePath,
+        isDirectory: fs.statSync(filePath).isDirectory()
+      };
+    } catch (error) {
+      console.error(`Error reading info of ${filePath}`)
+    }
   });
 });
 
 ipcMain.handle('open-file', async (event, filePath) => {
   try {
-    console.log(`Opening file ${filePath}`)
     await shell.openPath(filePath);
   } catch (err) {
     console.error('Error opening file:', err);

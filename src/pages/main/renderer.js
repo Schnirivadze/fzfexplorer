@@ -32,31 +32,31 @@ async function loadDirectory(directoryPath) {
     try {
         const files = await window.electronAPI.listFiles(directoryPath);
         files.forEach(file => {
-            var item = document.createElement("button");
-            item.classList.add("item");
+            if (file != undefined) {
+                var item = document.createElement("button");
+                item.classList.add("item");
 
-            var icon = document.createElement("img");
-            var name = document.createElement("p");
-            name.classList.add("name");
-            name.innerText = file.name;
+                var icon = document.createElement("img");
+                var name = document.createElement("p");
+                name.classList.add("name");
+                name.innerText = file.name;
 
-            if (file.isDirectory) {
-                icon.src = "../../img/folder.svg";
-                item.addEventListener('click', () => { loadDirectory(file.path); });
-            } else {
-                icon.src = "../../img/text-x-generic.svg";
-                item.addEventListener('click', () => { window.electronAPI.openFile(file.path); });
+                if (file.isDirectory) {
+                    icon.src = "../../img/folder.svg";
+                    item.addEventListener('click', () => { loadDirectory(file.path); });
+                } else {
+                    icon.src = "../../img/text-x-generic.svg";
+                    item.addEventListener('click', () => { window.electronAPI.openFile(file.path); });
+                }
+
+                item.appendChild(icon);
+                item.appendChild(name);
+                fileContainer.appendChild(item);
             }
-
-            item.appendChild(icon);
-            item.appendChild(name);
-            fileContainer.appendChild(item);
         });
     } catch (error) {
         console.error(`Failed to load directory: ${directoryPath}`, error);
     }
-    console.log(`current directory is ${currentFolder}`);
-
 }
 
 function getParentDirectory(directoryPath) {
@@ -112,7 +112,7 @@ async function getDrives() {
             drives.forEach((drive) => {
                 const icon = (drive.isRemovable) ? "media-removable" : "Drive"
                 drive.mountpoints.forEach((mountpoint) => {
-                    document.getElementById("devices").innerHTML += `<button class="navbar-list-element" onclick="loadDirectory('${mountpoint.path}');document.getElementById('current-folder').innerText='${mountpoint.path}';"><img src="../../img/${icon}.svg" class="navbar-icon">${mountpoint.path}</button>`
+                    document.getElementById("devices").innerHTML += `<button class="navbar-list-element" onclick="loadDirectory('${mountpoint.path.replace('\\', "\\\\")}');document.getElementById('current-folder').innerText='${mountpoint.path.replace('\\', "\\\\")}';"><img src="../../img/${icon}.svg" class="navbar-icon">${mountpoint.path}</button>`
                 });
             });
         }
