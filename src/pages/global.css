@@ -1,6 +1,7 @@
 * {
     font-family: "Segoe UI", Arial, sans-serif;
     user-select: none;
+    outline: none;
 }
 
 @media (prefers-color-scheme: light) {
