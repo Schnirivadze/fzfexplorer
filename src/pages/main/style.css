@@ -19,10 +19,13 @@ body {
 #navbar {
     background-color: var(--side-panel);
     width: 220px;
-    border-radius: 10px 0 0 10px;
     height: calc(100% - 2px);
-    border: 1px solid var(--side-border);
     border-right: none;
+}
+
+.navbar-not-maximized {
+    border-radius: 10px 0 0 10px;
+    border: 1px solid var(--side-border);
 }
 
 #navbar section {
@@ -67,9 +70,12 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
-    border-radius: 0 10px 10px 0;
-    border: 1px solid var(--main-border);
     border-left: none;
+}
+
+.mainbar-not-maximized {
+    border: 1px solid var(--main-border);
+    border-radius: 0 10px 10px 0;
 }
 
 main .top-bar {
@@ -187,7 +193,8 @@ main .path-bar .path-wrapper {
     overflow-y: hidden;
     border-radius: 5px;
 }
-main .path-bar .path-wrapper-overflow{
+
+main .path-bar .path-wrapper-overflow {
     box-shadow: inset 25px 0px 15px -20px var(--hover-color);
 }
 

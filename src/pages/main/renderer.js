@@ -228,13 +228,26 @@ const fillInteractablePath = () => {
 
 }
 
+window.electronAPI.ipcRenderer.on('window-resize', async () => {
+    const pathWrapper = document.getElementById("path-wrapper");
+    pathWrapper.scrollLeft = pathWrapper.scrollWidth;
 
-window.electronAPI.ipcRenderer.on('window-resize', () => {
-    const pathWrapper = document.getElementById("path-wrapper")
-    pathWrapper.scrollLeft = 100000000
     if (pathWrapper.scrollWidth > pathWrapper.clientWidth) {
-        pathWrapper.classList.add("path-wrapper-overflow")
+        pathWrapper.classList.add("path-wrapper-overflow");
     } else {
-        pathWrapper.classList.remove("path-wrapper-overflow")
+        pathWrapper.classList.remove("path-wrapper-overflow");
+    }
+
+    const isMaximized = await window.electronAPI.isMaximized();
+    console.log(isMaximized)
+    const navbar = document.getElementById("navbar");
+    const mainbar = document.querySelector("main");
+
+    if (isMaximized) {
+        navbar.classList.remove("navbar-not-maximized");
+        mainbar.classList.remove("mainbar-not-maximized");
+    } else {
+        navbar.classList.add("navbar-not-maximized");
+        mainbar.classList.add("mainbar-not-maximized");
     }
 });

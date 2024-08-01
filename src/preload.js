@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     pathExists: () => ipcRenderer.invoke('path-exists'),
     driveList: () => ipcRenderer.invoke('drive-list'),
     getUsername: () => ipcRenderer.invoke('username'),
+    isMaximized: () => ipcRenderer.invoke('is-maximized'),
 
     platform: process.platform,
     ipcRenderer: {

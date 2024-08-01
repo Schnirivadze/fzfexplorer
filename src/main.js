@@ -30,6 +30,7 @@ function createWindow() {
   ipcMain.handle('path-exists', (path) => { fs.existsSync(path) })
   ipcMain.handle('drive-list', drivelist.list)
   ipcMain.handle('username', () => { return os.userInfo().username })
+  ipcMain.handle('is-maximized', () => { return window.isMaximized() })
 }
 
 app.whenReady().then(createWindow);
