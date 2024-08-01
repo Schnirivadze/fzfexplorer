@@ -1,15 +1,17 @@
 const splitter = (window.electronAPI.platform == "win32") ? '\\' : '/'
-var currentFolder = "";
+var openedDirectoryHistory = []
+var openedDirectoryOffset = 0
 
 document.addEventListener("DOMContentLoaded", async () => { await initializeApp(); });
 
 async function initializeApp() {
     try {
         getDrives();
-        var currentFolder = await window.electronAPI.getHomeDirectory();
-        console.log(`Current folder set to: ${currentFolder}`);
+        var homedir = await window.electronAPI.getHomeDirectory();
+        console.log(`Current folder set to: ${homedir}`);
 
-        await loadDirectory(currentFolder);
+        openFolder(homedir);
+        setArrowsAvailability()
         await setUpQuickAccess();
 
         // Event listeners
@@ -17,14 +19,12 @@ async function initializeApp() {
         document.getElementById("window-button-maximize").addEventListener("click", window.electronAPI.maximize);
         document.getElementById("window-button-close").addEventListener("click", window.electronAPI.close);
         document.getElementsByTagName("body")[0].addEventListener("keypress", (event) => { if (event.code === "Backslash") window.electronAPI.openDevTools(); });
-        document.getElementById("back-arrow").addEventListener("click", goUpDirectory);
     } catch (error) {
         console.error("Failed to set current folder:", error);
     }
 }
 
 async function loadDirectory(directoryPath) {
-    currentFolder = directoryPath;
     console.log(`Loading directory ${directoryPath}`);
     const fileContainer = document.getElementById('contents');
     const fileAmount = document.getElementById('items-amount')
@@ -46,7 +46,7 @@ async function loadDirectory(directoryPath) {
 
                 if (file.isDirectory) {
                     icon.src = "../../img/folder.svg";
-                    item.addEventListener('click', () => { loadDirectory(file.path); });
+                    item.addEventListener('click', () => { openFolder(file.path) });
                 } else {
                     icon.src = "../../img/text-x-generic.svg";
                     item.addEventListener('click', () => { window.electronAPI.openFile(file.path); });
@@ -64,6 +64,18 @@ async function loadDirectory(directoryPath) {
     }
 }
 
+const openFolder = (directoryPath) => {
+    openedDirectoryHistory = openedDirectoryHistory.slice(0, openedDirectoryHistory.length - openedDirectoryOffset)
+    openedDirectoryOffset = 0
+    openedDirectoryHistory.push(directoryPath)
+    setArrowsAvailability()
+    loadCurrentDirectory()
+}
+
+const getCurrentDirectory = () => openedDirectoryHistory[openedDirectoryHistory.length - 1 - openedDirectoryOffset]
+
+const loadCurrentDirectory = () => loadDirectory(getCurrentDirectory())
+
 function getParentDirectory(directoryPath) {
     const defaultPath = (window.electronAPI.platform == "win32") ? "C:\\" : "/"
     const parts = directoryPath.split(splitter);
@@ -71,8 +83,69 @@ function getParentDirectory(directoryPath) {
     return parts.join(splitter) || defaultPath; // Join the remaining parts and handle root directory
 }
 
-function goUpDirectory() {
-    loadDirectory(getParentDirectory(currentFolder));
+const goUpDirectory = () => {
+    openFolder(getParentDirectory(getCurrentDirectory()));
+    setArrowsAvailability()
+}
+
+const goBackDirectory = () => {
+    openedDirectoryOffset++
+    setArrowsAvailability()
+    loadCurrentDirectory()
+}
+
+const goForwardDirectory = () => {
+    openedDirectoryOffset--
+    setArrowsAvailability()
+    loadCurrentDirectory()
+}
+
+const setArrowsAvailability = () => {
+    const forwardArrow = document.getElementById("forward-arrow")
+    if (openedDirectoryOffset == 0) {//at most recent directory
+        if (forwardArrow.classList.contains("arrow-img-active")) {
+            forwardArrow.classList.remove("arrow-img-active")
+            forwardArrow.classList.add("arrow-img-inactive")
+            forwardArrow.removeEventListener("click", goForwardDirectory)
+        }
+    } else {
+        if (forwardArrow.classList.contains("arrow-img-inactive")) {
+            forwardArrow.classList.remove("arrow-img-inactive")
+            forwardArrow.classList.add("arrow-img-active")
+            forwardArrow.addEventListener("click", goForwardDirectory)
+        }
+    }
+
+    const backArrow = document.getElementById("back-arrow")
+    if (openedDirectoryHistory.length - 1 - openedDirectoryOffset == 0) {//at oldest directory
+        if (backArrow.classList.contains("arrow-img-active")) {
+            backArrow.classList.remove("arrow-img-active")
+            backArrow.classList.add("arrow-img-inactive")
+            backArrow.removeEventListener("click", goBackDirectory)
+        }
+    } else {
+        if (backArrow.classList.contains("arrow-img-inactive")) {
+            backArrow.classList.remove("arrow-img-inactive")
+            backArrow.classList.add("arrow-img-active")
+            backArrow.addEventListener("click", goBackDirectory)
+        }
+    }
+
+    const upArrow = document.getElementById("up-arrow")
+    console.info(getCurrentDirectory().split(splitter).filter((x) => x != ''))
+    if (getCurrentDirectory().split(splitter).filter((x) => x != '').length > 1) {
+        if (upArrow.classList.contains("arrow-img-inactive")) {
+            upArrow.classList.remove("arrow-img-inactive")
+            upArrow.classList.add("arrow-img-active")
+            upArrow.addEventListener("click", goUpDirectory)
+        }
+    } else {
+        if (upArrow.classList.contains("arrow-img-active")) {
+            upArrow.classList.remove("arrow-img-active")
+            upArrow.classList.add("arrow-img-inactive")
+            upArrow.removeEventListener("click", goUpDirectory)
+        }
+    }
 }
 
 async function setUpQuickAccess() {
@@ -81,22 +154,22 @@ async function setUpQuickAccess() {
     if (window.electronAPI.platform == "win32") {
         folders.forEach(folder => {
             if (window.electronAPI.pathExists(homeFolder + "\\" + folder)) {
-                document.getElementById("quick-access-" + folder.toLowerCase()).addEventListener("click", () => { loadDirectory(homeFolder + "\\" + folder); });
+                document.getElementById("quick-access-" + folder.toLowerCase()).addEventListener("click", () => { openFolder(homeFolder + "\\" + folder); });
             } else {
                 document.getElementById("quick-access-" + folder.toLowerCase()).remove()
             }
         });
-        document.getElementById("quick-access-trash").addEventListener("click", () => { loadDirectory("C:\\$Recycle.Bin"); });
+        document.getElementById("quick-access-trash").addEventListener("click", () => { openFolder("C:\\$Recycle.Bin"); });
     } else {
         folders.forEach(folder => {
 
             if (window.electronAPI.pathExists(homeFolder + "/" + folder)) {
-                document.getElementById("quick-access-" + folder.toLowerCase()).addEventListener("click", () => { loadDirectory(homeFolder + "/" + folder); });
+                document.getElementById("quick-access-" + folder.toLowerCase()).addEventListener("click", () => { openFolder(homeFolder + "/" + folder); });
             } else {
                 document.getElementById("quick-access-" + folder.toLowerCase()).remove()
             }
         });
-        document.getElementById("quick-access-trash").addEventListener("click", () => { loadDirectory(homeFolder + "/.local/share/Trash/files"); });
+        document.getElementById("quick-access-trash").addEventListener("click", () => { openFolder(homeFolder + "/.local/share/Trash/files"); });
     }
 }
 
