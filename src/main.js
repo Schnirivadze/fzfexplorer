@@ -19,6 +19,10 @@ function createWindow() {
   });
 
   window.loadFile(path.join(__dirname, 'pages/main/index.html'));
+  window.on('resize', () => {
+    // Send resize event to renderer process
+    window.webContents.send('window-resize');
+  });
   ipcMain.handle('minimize', () => window.minimize());
   ipcMain.handle('maximize', () => window.maximize());
   ipcMain.handle('close', () => app.quit());

@@ -69,6 +69,7 @@ const openFolder = (directoryPath) => {
     openedDirectoryOffset = 0
     openedDirectoryHistory.push(directoryPath)
     setArrowsAvailability()
+    fillInteractablePath()
     loadCurrentDirectory()
 }
 
@@ -91,12 +92,14 @@ const goUpDirectory = () => {
 const goBackDirectory = () => {
     openedDirectoryOffset++
     setArrowsAvailability()
+    fillInteractablePath()
     loadCurrentDirectory()
 }
 
 const goForwardDirectory = () => {
     openedDirectoryOffset--
     setArrowsAvailability()
+    fillInteractablePath()
     loadCurrentDirectory()
 }
 
@@ -198,3 +201,40 @@ async function getDrives() {
         console.error(`Error: ${err}`);
     }
 }
+
+const fillInteractablePath = () => {
+    const pathWrapper = document.getElementById("path-wrapper")
+    pathWrapper.innerHTML = `
+    <button class="path-button">This PC</button>
+    <span class="path-arrow"><img src="../../img/right-arrow.svg"></span>`
+
+    getCurrentDirectory().split(splitter).filter((folder) => folder != '').forEach((folder) => {
+        if (folder.length == 2 && folder[1] == ':') {
+            pathWrapper.innerHTML += `
+            <button class="path-button">Local Disk (${folder.toUpperCase()})</button>
+            <span class="path-arrow"><img src="../../img/right-arrow.svg"></span>`
+        } else {
+            pathWrapper.innerHTML += `
+            <button class="path-button" onclick=openFolder("${getCurrentDirectory().substring(0, getCurrentDirectory().indexOf(folder)) + folder}")>${folder}</button>
+            <span class="path-arrow"><img src="../../img/right-arrow.svg"></span>`
+        }
+    })
+    pathWrapper.scrollLeft = 100000000
+    if (pathWrapper.scrollWidth > pathWrapper.clientWidth) {
+        pathWrapper.classList.add("path-wrapper-overflow")
+    } else {
+        pathWrapper.classList.remove("path-wrapper-overflow")
+    }
+
+}
+
+
+window.electronAPI.ipcRenderer.on('window-resize', () => {
+    const pathWrapper = document.getElementById("path-wrapper")
+    pathWrapper.scrollLeft = 100000000
+    if (pathWrapper.scrollWidth > pathWrapper.clientWidth) {
+        pathWrapper.classList.add("path-wrapper-overflow")
+    } else {
+        pathWrapper.classList.remove("path-wrapper-overflow")
+    }
+});
