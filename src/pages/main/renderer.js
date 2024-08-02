@@ -211,11 +211,12 @@ const fillInteractablePath = () => {
     getCurrentDirectory().split(splitter).filter((folder) => folder != '').forEach((folder) => {
         if (folder.length == 2 && folder[1] == ':') {
             pathWrapper.innerHTML += `
-            <button class="path-button">Local Disk (${folder.toUpperCase()})</button>
+            <button class="path-button" onclick=openFolder("${folder}")>Local Disk (${folder.toUpperCase()})</button>
             <span class="path-arrow"><img src="../../img/right-arrow.svg"></span>`
         } else {
+            var folderpath = (window.electronAPI.platform == "win32") ? getCurrentDirectory().split(splitter).splice(0, (getCurrentDirectory().split(splitter).indexOf(folder) + 1)).join(splitter + splitter) : getCurrentDirectory().substring(0, getCurrentDirectory().indexOf(folder)) + folder
             pathWrapper.innerHTML += `
-            <button class="path-button" onclick=openFolder("${getCurrentDirectory().substring(0, getCurrentDirectory().indexOf(folder)) + folder}")>${folder}</button>
+            <button class="path-button" onclick=openFolder("${folderpath}")>${folder}</button>
             <span class="path-arrow"><img src="../../img/right-arrow.svg"></span>`
         }
     })
