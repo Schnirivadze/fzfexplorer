@@ -51,12 +51,10 @@ async function loadDirectory(directoryPath) {
                     icon.src = "../../img/text-x-generic.svg";
                     item.addEventListener('click', () => { window.electronAPI.openFile(file.path); });
                 }
-                if (!file.isDirectory) {
-                    item.addEventListener('contextmenu', (event) => {
-                        event.preventDefault();
-                        window.electronAPI.showContextMenu(event, file);
-                    });
-                }
+                item.addEventListener('contextmenu', (event) => {
+                    event.preventDefault();
+                    window.electronAPI.showContextMenu(event, file);
+                });
                 item.appendChild(icon);
                 item.appendChild(name);
                 fileContainer.appendChild(item);
@@ -255,3 +253,5 @@ window.electronAPI.ipcRenderer.on('window-resize', async () => {
         mainbar.classList.add("mainbar-not-maximized");
     }
 });
+
+window.electronAPI.ipcRenderer.on('open-file', (event, filePath) => { openFolder(filePath); });

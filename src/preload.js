@@ -16,17 +16,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     platform: process.platform,
     ipcRenderer: {
-        on: (channel, func) => {
-            const validChannels = ['window-resize'];
-            if (validChannels.includes(channel)) {
-                ipcRenderer.on(channel, func);
-            }
-        },
-        send: (channel, data) => {
-            const validChannels = ['window-resize'];
-            if (validChannels.includes(channel)) {
-                ipcRenderer.send(channel, data);
-            }
-        }
+        on: (channel, func) => { ipcRenderer.on(channel, func); },
+        send: (channel, data) => { ipcRenderer.send(channel, data); }
     }
 });
