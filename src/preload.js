@@ -8,10 +8,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     close: () => ipcRenderer.invoke('close'),
     openDevTools: () => ipcRenderer.invoke('open-dev-tools'),
     getHomeDirectory: () => ipcRenderer.invoke('get-home-directory'),
-    pathExists: () => ipcRenderer.invoke('path-exists'),
+    pathExists: (path) => ipcRenderer.invoke('path-exists', path),
     driveList: () => ipcRenderer.invoke('drive-list'),
     getUsername: () => ipcRenderer.invoke('username'),
     isMaximized: () => ipcRenderer.invoke('is-maximized'),
+    showContextMenu: (event, file) => ipcRenderer.invoke('show-context-menu', { x: event.x, y: event.y, file }),
 
     platform: process.platform,
     ipcRenderer: {
@@ -27,5 +28,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
                 ipcRenderer.send(channel, data);
             }
         }
-    },
+    }
 });

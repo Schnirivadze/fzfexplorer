@@ -51,7 +51,12 @@ async function loadDirectory(directoryPath) {
                     icon.src = "../../img/text-x-generic.svg";
                     item.addEventListener('click', () => { window.electronAPI.openFile(file.path); });
                 }
-
+                if (!file.isDirectory) {
+                    item.addEventListener('contextmenu', (event) => {
+                        event.preventDefault();
+                        window.electronAPI.showContextMenu(event, file);
+                    });
+                }
                 item.appendChild(icon);
                 item.appendChild(name);
                 fileContainer.appendChild(item);
@@ -135,7 +140,6 @@ const setArrowsAvailability = () => {
     }
 
     const upArrow = document.getElementById("up-arrow")
-    console.info(getCurrentDirectory().split(splitter).filter((x) => x != ''))
     if (getCurrentDirectory().split(splitter).filter((x) => x != '').length > 1) {
         if (upArrow.classList.contains("arrow-img-inactive")) {
             upArrow.classList.remove("arrow-img-inactive")
@@ -240,7 +244,6 @@ window.electronAPI.ipcRenderer.on('window-resize', async () => {
     }
 
     const isMaximized = await window.electronAPI.isMaximized();
-    console.log(isMaximized)
     const navbar = document.getElementById("navbar");
     const mainbar = document.querySelector("main");
 
