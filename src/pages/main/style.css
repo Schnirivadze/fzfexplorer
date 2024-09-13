@@ -8,12 +8,16 @@ body {
 }
 
 .logo {
-    background-color: red;
-    width: 65%;
+    width: 90%;
     margin-left: 5%;
     margin-top: 5%;
     height: 50px;
     margin-bottom: 11px;
+    font-weight: 900;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.75em;
 }
 
 #navbar {

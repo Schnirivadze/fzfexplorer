@@ -1,193 +1,218 @@
-const splitter = (window.electronAPI.platform == "win32") ? '\\' : '/'
-var openedDirectoryHistory = []
-var openedDirectoryOffset = 0
+// Constants
+const PLATFORM = window.electronAPI.platform;
+const SPLITTER = PLATFORM === "win32" ? '\\' : '/';
+let openedDirectoryHistory = [];
+let openedDirectoryOffset = 0;
 
-document.addEventListener("DOMContentLoaded", async () => { await initializeApp(); });
+// Initialize the app once DOM is fully loaded
+document.addEventListener("DOMContentLoaded", initializeApp);
 
+// Application Initialization
 async function initializeApp() {
     try {
-        getDrives();
-        var homedir = await window.electronAPI.getHomeDirectory();
-        console.log(`Current folder set to: ${homedir}`);
-
-        openFolder(homedir);
-        setArrowsAvailability()
-        await setUpQuickAccess();
-
-        // Event listeners
-        document.getElementById("window-button-minimize").addEventListener("click", window.electronAPI.minimize);
-        document.getElementById("window-button-maximize").addEventListener("click", window.electronAPI.maximize);
-        document.getElementById("window-button-close").addEventListener("click", window.electronAPI.close);
-        document.getElementsByTagName("body")[0].addEventListener("keypress", (event) => { if (event.code === "Backslash") window.electronAPI.openDevTools(); });
+        await setupWindowControls();
+        await setupFileSystem();
+        setupEventListeners();
     } catch (error) {
-        console.error("Failed to set current folder:", error);
+        console.error("Failed to initialize the application:", error);
     }
 }
 
+// Setup window controls (minimize, maximize, close)
+async function setupWindowControls() {
+    document.getElementById("window-button-minimize").addEventListener("click", window.electronAPI.minimize);
+    document.getElementById("window-button-maximize").addEventListener("click", window.electronAPI.maximize);
+    document.getElementById("window-button-close").addEventListener("click", window.electronAPI.close);
+}
+
+// Setup file system (home directory, quick access, drives)
+async function setupFileSystem() {
+    const homeDirectory = await window.electronAPI.getHomeDirectory();
+    console.log(`Current folder set to: ${homeDirectory}`);
+
+    openFolder(homeDirectory);
+    updateNavigationArrows();
+    await setupQuickAccess();
+    await loadDrives();
+}
+
+// Setup general event listeners
+function setupEventListeners() {
+    document.body.addEventListener("keypress", handleKeyPress);
+}
+
+// Handle key press events
+function handleKeyPress(event) {
+    if (event.code === "Backslash") {
+        window.electronAPI.openDevTools();
+    }
+}
+
+// Load and display directory contents
 async function loadDirectory(directoryPath) {
-    console.log(`Loading directory ${directoryPath}`);
     const fileContainer = document.getElementById('contents');
-    const fileAmount = document.getElementById('items-amount')
+    const fileAmount = document.getElementById('items-amount');
     fileContainer.innerHTML = '';
 
     try {
-        var files = await window.electronAPI.listFiles(directoryPath);
-        files = files.filter((file) => file != undefined)
-        fileAmount.innerText = (files.length == 1) ? "1 item" : `${files.length} items`
-        if (files.length != 0) {
-            files.forEach(file => {
-                var item = document.createElement("button");
-                item.classList.add("item");
+        let files = await window.electronAPI.listFiles(directoryPath);
+        files = files.filter(file => file !== undefined);
 
-                var icon = document.createElement("img");
-                var name = document.createElement("p");
-                name.classList.add("name");
-                name.innerText = file.name;
+        fileAmount.innerText = `${files.length} item${files.length !== 1 ? 's' : ''}`;
 
-                if (file.isDirectory) {
-                    icon.src = "../../img/folder.svg";
-                    item.addEventListener('click', () => { openFolder(file.path) });
-                } else {
-                    icon.src = "../../img/text-x-generic.svg";
-                    item.addEventListener('click', () => { window.electronAPI.openFile(file.path); });
-                }
-                item.addEventListener('contextmenu', (event) => {
-                    event.preventDefault();
-                    window.electronAPI.showContextMenu(event, file);
-                });
-                item.appendChild(icon);
-                item.appendChild(name);
-                fileContainer.appendChild(item);
-            });
+        if (files.length === 0) {
+            displayEmptyFolderMessage(fileContainer);
         } else {
-            fileContainer.innerHTML = `<h1 class="folder-empty">Folder is empty</h1>`
+            files.forEach(file => createFileElement(file, fileContainer));
         }
     } catch (error) {
         console.error(`Failed to load directory: ${directoryPath}`, error);
     }
 }
 
-const openFolder = (directoryPath) => {
-    openedDirectoryHistory = openedDirectoryHistory.slice(0, openedDirectoryHistory.length - openedDirectoryOffset)
-    openedDirectoryOffset = 0
-    openedDirectoryHistory.push(directoryPath)
-    setArrowsAvailability()
-    fillInteractablePath()
-    loadCurrentDirectory()
+// Create an element for each file or folder
+function createFileElement(file, container) {
+    const item = document.createElement("button");
+    item.classList.add("item");
+
+    const icon = document.createElement("img");
+    const name = document.createElement("p");
+    name.classList.add("name");
+    name.innerText = file.name;
+
+    icon.src = file.isDirectory ? "../../img/folder.svg" : "../../img/text-x-generic.svg";
+    item.addEventListener('click', () => {
+        file.isDirectory ? openFolder(file.path) : window.electronAPI.openFile(file.path);
+    });
+    item.addEventListener('contextmenu', (event) => {
+        event.preventDefault();
+        window.electronAPI.showContextMenu(event, file);
+    });
+
+    item.appendChild(icon);
+    item.appendChild(name);
+    container.appendChild(item);
 }
 
-const getCurrentDirectory = () => openedDirectoryHistory[openedDirectoryHistory.length - 1 - openedDirectoryOffset]
+// Display a message when the folder is empty
+function displayEmptyFolderMessage(container) {
+    container.innerHTML = `<h1 class="folder-empty">Folder is empty</h1>`;
+}
 
-const loadCurrentDirectory = () => loadDirectory(getCurrentDirectory())
+// Open a folder and manage history
+function openFolder(directoryPath) {
+    updateDirectoryHistory(directoryPath);
+    updateNavigationArrows();
+    updatePathDisplay();
+    loadCurrentDirectory();
+}
 
+// Update the directory history and offset
+function updateDirectoryHistory(directoryPath) {
+    openedDirectoryHistory = openedDirectoryHistory.slice(0, openedDirectoryHistory.length - openedDirectoryOffset);
+    openedDirectoryOffset = 0;
+    openedDirectoryHistory.push(directoryPath);
+}
+
+// Get the current directory
+function getCurrentDirectory() {
+    return openedDirectoryHistory[openedDirectoryHistory.length - 1 - openedDirectoryOffset];
+}
+
+// Load the contents of the current directory
+function loadCurrentDirectory() {
+    loadDirectory(getCurrentDirectory());
+}
+
+// Get the parent directory path
 function getParentDirectory(directoryPath) {
-    const defaultPath = (window.electronAPI.platform == "win32") ? "C:\\" : "/"
-    const parts = directoryPath.split(splitter);
-    parts.pop(); // Remove the last part of the path
-    return parts.join(splitter) || defaultPath; // Join the remaining parts and handle root directory
+    const defaultPath = PLATFORM === "win32" ? "C:\\" : "/";
+    const parts = directoryPath.split(SPLITTER).filter(Boolean);
+    parts.pop();
+    return parts.join(SPLITTER) || defaultPath;
 }
 
-const goUpDirectory = () => {
+// Navigate up to the parent directory
+function goUpDirectory() {
     openFolder(getParentDirectory(getCurrentDirectory()));
-    setArrowsAvailability()
+    updateNavigationArrows();
 }
 
-const goBackDirectory = () => {
-    openedDirectoryOffset++
-    setArrowsAvailability()
-    fillInteractablePath()
-    loadCurrentDirectory()
+// Navigate back to the previous directory in history
+function goBackDirectory() {
+    openedDirectoryOffset++;
+    updateNavigationArrows();
+    updatePathDisplay();
+    loadCurrentDirectory();
 }
 
-const goForwardDirectory = () => {
-    openedDirectoryOffset--
-    setArrowsAvailability()
-    fillInteractablePath()
-    loadCurrentDirectory()
+// Navigate forward to the next directory in history
+function goForwardDirectory() {
+    openedDirectoryOffset--;
+    updateNavigationArrows();
+    updatePathDisplay();
+    loadCurrentDirectory();
 }
 
-const setArrowsAvailability = () => {
-    const forwardArrow = document.getElementById("forward-arrow")
-    if (openedDirectoryOffset == 0) {//at most recent directory
-        if (forwardArrow.classList.contains("arrow-img-active")) {
-            forwardArrow.classList.remove("arrow-img-active")
-            forwardArrow.classList.add("arrow-img-inactive")
-            forwardArrow.removeEventListener("click", goForwardDirectory)
-        }
-    } else {
-        if (forwardArrow.classList.contains("arrow-img-inactive")) {
-            forwardArrow.classList.remove("arrow-img-inactive")
-            forwardArrow.classList.add("arrow-img-active")
-            forwardArrow.addEventListener("click", goForwardDirectory)
-        }
-    }
+// Update the availability of navigation arrows (back, forward, up)
+function updateNavigationArrows() {
+    updateArrowState("forward-arrow", openedDirectoryOffset === 0, goForwardDirectory);
+    updateArrowState("back-arrow", openedDirectoryHistory.length - 1 - openedDirectoryOffset === 0, goBackDirectory);
+    updateArrowState("up-arrow", getCurrentDirectory().split(SPLITTER).filter(x => x).length > 1, goUpDirectory);
+}
 
-    const backArrow = document.getElementById("back-arrow")
-    if (openedDirectoryHistory.length - 1 - openedDirectoryOffset == 0) {//at oldest directory
-        if (backArrow.classList.contains("arrow-img-active")) {
-            backArrow.classList.remove("arrow-img-active")
-            backArrow.classList.add("arrow-img-inactive")
-            backArrow.removeEventListener("click", goBackDirectory)
-        }
+// Update the state of an individual arrow (active/inactive)
+function updateArrowState(arrowId, isInactive, clickHandler) {
+    const arrow = document.getElementById(arrowId);
+    if (isInactive) {
+        arrow.classList.replace("arrow-img-active", "arrow-img-inactive");
+        arrow.removeEventListener("click", clickHandler);
     } else {
-        if (backArrow.classList.contains("arrow-img-inactive")) {
-            backArrow.classList.remove("arrow-img-inactive")
-            backArrow.classList.add("arrow-img-active")
-            backArrow.addEventListener("click", goBackDirectory)
-        }
-    }
-
-    const upArrow = document.getElementById("up-arrow")
-    if (getCurrentDirectory().split(splitter).filter((x) => x != '').length > 1) {
-        if (upArrow.classList.contains("arrow-img-inactive")) {
-            upArrow.classList.remove("arrow-img-inactive")
-            upArrow.classList.add("arrow-img-active")
-            upArrow.addEventListener("click", goUpDirectory)
-        }
-    } else {
-        if (upArrow.classList.contains("arrow-img-active")) {
-            upArrow.classList.remove("arrow-img-active")
-            upArrow.classList.add("arrow-img-inactive")
-            upArrow.removeEventListener("click", goUpDirectory)
-        }
+        arrow.classList.replace("arrow-img-inactive", "arrow-img-active");
+        arrow.addEventListener("click", clickHandler);
     }
 }
 
-async function setUpQuickAccess() {
-    var homeFolder = await window.electronAPI.getHomeDirectory();
-    const folders = ["Desktop", "Documents", "Music", "Pictures", "Videos", "Downloads"]
-    if (window.electronAPI.platform == "win32") {
-        folders.forEach(folder => {
-            if (window.electronAPI.pathExists(homeFolder + "\\" + folder)) {
-                document.getElementById("quick-access-" + folder.toLowerCase()).addEventListener("click", () => { openFolder(homeFolder + "\\" + folder); });
-            } else {
-                document.getElementById("quick-access-" + folder.toLowerCase()).remove()
-            }
-        });
-        document.getElementById("quick-access-trash").addEventListener("click", () => { openFolder("C:\\$Recycle.Bin"); });
-    } else {
-        folders.forEach(folder => {
+// Setup quick access for common folders
+async function setupQuickAccess() {
+    const homeFolder = await window.electronAPI.getHomeDirectory();
+    const folders = ["Desktop", "Documents", "Music", "Pictures", "Videos", "Downloads"];
+    const trashPath = PLATFORM === "win32" ? "C:\\$Recycle.Bin" : `${homeFolder}/.local/share/Trash/files`;
 
-            if (window.electronAPI.pathExists(homeFolder + "/" + folder)) {
-                document.getElementById("quick-access-" + folder.toLowerCase()).addEventListener("click", () => { openFolder(homeFolder + "/" + folder); });
-            } else {
-                document.getElementById("quick-access-" + folder.toLowerCase()).remove()
-            }
-        });
-        document.getElementById("quick-access-trash").addEventListener("click", () => { openFolder(homeFolder + "/.local/share/Trash/files"); });
+    folders.forEach(folder => {
+        const folderPath = `${homeFolder}${SPLITTER}${folder}`;
+        setupQuickAccessItem(folder.toLowerCase(), folderPath);
+    });
+
+    setupQuickAccessItem("trash", trashPath);
+}
+
+// Setup a single quick access item
+function setupQuickAccessItem(folderId, folderPath) {
+    const element = document.getElementById(`quick-access-${folderId}`);
+    if (element) {
+        window.electronAPI.pathExists(folderPath)
+            .then(exists => {
+                if (exists) {
+                    element.addEventListener("click", () => openFolder(folderPath));
+                } else {
+                    element.remove();
+                }
+            });
     }
 }
 
-async function getDrives() {
+// Load and display available drives
+async function loadDrives() {
     try {
 
         const drives = await window.electronAPI.driveList();
-        if (window.electronAPI.platform != "win32") {
+        if (PLATFORM != "win32") {
             drives.forEach((drive) => {
                 const icon = (drive.isRemovable) ? "media-removable" : "Drive"
                 drive.mountpoints.forEach((mountpoint) => {
-                    const lastPart = mountpoint.path.substring(mountpoint.path.lastIndexOf(splitter) + 1)
-                    if (mountpoint.path.includes(splitter)) document.getElementById("devices").innerHTML += `<button class="navbar-list-element" onclick="loadDirectory('${mountpoint.path}');document.getElementById('current-folder').innerText='${(lastPart == "") ? "This Drive" : lastPart}';"><img src="../../img/${icon}.svg" class="navbar-icon">${(lastPart == "") ? "This Drive" : lastPart}</button>`
+                    const lastPart = mountpoint.path.substring(mountpoint.path.lastIndexOf(SPLITTER) + 1)
+                    if (mountpoint.path.includes(SPLITTER)) document.getElementById("devices").innerHTML += `<button class="navbar-list-element" onclick="loadDirectory('${mountpoint.path}');document.getElementById('current-folder').innerText='${(lastPart == "") ? "This Drive" : lastPart}';" > <img src="../../img/${icon}.svg" class="navbar-icon">${(lastPart == "") ? "This Drive" : lastPart}</button>`
 
                 });
             });
@@ -195,63 +220,52 @@ async function getDrives() {
             drives.forEach((drive) => {
                 const icon = (drive.isRemovable) ? "media-removable" : "Drive"
                 drive.mountpoints.forEach((mountpoint) => {
-                    document.getElementById("devices").innerHTML += `<button class="navbar-list-element" onclick="loadDirectory('${mountpoint.path.replace('\\', "\\\\")}');document.getElementById('current-folder').innerText='${mountpoint.path.replace('\\', "\\\\")}';"><img src="../../img/${icon}.svg" class="navbar-icon">${mountpoint.path}</button>`
+                    document.getElementById("devices").innerHTML += `<button class="navbar-list-element" onclick="loadDirectory('${mountpoint.path.replace('\\', "\\\\")}');document.getElementById('current-folder').innerText='${mountpoint.path.replace('\\', "\\\\")}';" > <img src="../../img/${icon}.svg" class="navbar-icon">${mountpoint.path}</button>`
                 });
             });
         }
     } catch (err) {
-        console.error(`Error: ${err}`);
+        console.error(`Error: ${ err }`);
     }
 }
 
-const fillInteractablePath = () => {
-    const pathWrapper = document.getElementById("path-wrapper")
-    pathWrapper.innerHTML = `
-    <button class="path-button">This PC</button>
-    <span class="path-arrow"><img src="../../img/right-arrow.svg"></span>`
-
-    getCurrentDirectory().split(splitter).filter((folder) => folder != '').forEach((folder) => {
-        if (folder.length == 2 && folder[1] == ':') {
-            pathWrapper.innerHTML += `
-            <button class="path-button" onclick=openFolder("${folder}")>Local Disk (${folder.toUpperCase()})</button>
-            <span class="path-arrow"><img src="../../img/right-arrow.svg"></span>`
-        } else {
-            var folderpath = (window.electronAPI.platform == "win32") ? getCurrentDirectory().split(splitter).splice(0, (getCurrentDirectory().split(splitter).indexOf(folder) + 1)).join(splitter + splitter) : getCurrentDirectory().substring(0, getCurrentDirectory().indexOf(folder)) + folder
-            pathWrapper.innerHTML += `
-            <button class="path-button" onclick=openFolder("${folderpath}")>${folder}</button>
-            <span class="path-arrow"><img src="../../img/right-arrow.svg"></span>`
-        }
-    })
-    pathWrapper.scrollLeft = 100000000
-    if (pathWrapper.scrollWidth > pathWrapper.clientWidth) {
-        pathWrapper.classList.add("path-wrapper-overflow")
-    } else {
-        pathWrapper.classList.remove("path-wrapper-overflow")
-    }
-
+// Get the last part of a path
+function getLastPathPart(path) {
+    return path.substring(path.lastIndexOf(SPLITTER) + 1);
 }
 
-window.electronAPI.ipcRenderer.on('window-resize', async () => {
+// Create the HTML for a drive button
+function createDriveButtonHTML(path, icon, label) {
+    const sanitizedPath = PLATFORM === "win32" ? path.replace(/\\/g, "\\\\") : path;
+    return `<button class="navbar-list-element" onclick="loadDirectory('${sanitizedPath}'); document.getElementById('current-folder').innerText='${label}';"><img src="../../img/${icon}.svg" class="navbar-icon">${label}</button>`;
+}
+
+// Update the interactable path display
+function updatePathDisplay() {
     const pathWrapper = document.getElementById("path-wrapper");
+    pathWrapper.innerHTML = `<button class="path-button">This PC</button><span class="path-arrow"><img src="../../img/right-arrow.svg"></span>`;
+
+    const pathParts = getCurrentDirectory().split(SPLITTER).filter(Boolean);
+    pathParts.forEach((folder, index) => {
+        const folderPath = constructFolderPath(pathParts.slice(0, index + 1).join(SPLITTER));
+        pathWrapper.innerHTML += createPathButtonHTML(folderPath, folder);
+    });
+
     pathWrapper.scrollLeft = pathWrapper.scrollWidth;
+    togglePathWrapperOverflow(pathWrapper);
+}
 
-    if (pathWrapper.scrollWidth > pathWrapper.clientWidth) {
-        pathWrapper.classList.add("path-wrapper-overflow");
-    } else {
-        pathWrapper.classList.remove("path-wrapper-overflow");
-    }
+// Construct the full path to a folder
+function constructFolderPath(folderPath) {
+    return PLATFORM === "win32" ? folderPath.replace(/\\/g, "\\\\") : folderPath;
+}
 
-    const isMaximized = await window.electronAPI.isMaximized();
-    const navbar = document.getElementById("navbar");
-    const mainbar = document.querySelector("main");
+// Create the HTML for a path button
+function createPathButtonHTML(folderPath, folderName) {
+    return `<button class="path-button" onclick="openFolder('${folderPath}')">${folderName}</button><span class="path-arrow"><img src="../../img/right-arrow.svg"></span>`;
+}
 
-    if (isMaximized) {
-        navbar.classList.remove("navbar-not-maximized");
-        mainbar.classList.remove("mainbar-not-maximized");
-    } else {
-        navbar.classList.add("navbar-not-maximized");
-        mainbar.classList.add("mainbar-not-maximized");
-    }
-});
-
-window.electronAPI.ipcRenderer.on('open-file', (event, filePath) => { openFolder(filePath); });
+// Toggle overflow behavior for the path wrapper
+function togglePathWrapperOverflow(wrapper) {
+    wrapper.style.overflowX = wrapper.scrollWidth > wrapper.clientWidth ? "scroll" : "hidden";
+}

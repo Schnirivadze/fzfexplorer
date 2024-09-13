@@ -1,22 +1,16 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+// Expose APIs to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
-    listFiles: (directoryPath) => ipcRenderer.invoke('list-files', directoryPath),
-    openFile: (filePath) => ipcRenderer.invoke('open-file', filePath),
+    platform: () => ipcRenderer.invoke('platform'),
     minimize: () => ipcRenderer.invoke('minimize'),
     maximize: () => ipcRenderer.invoke('maximize'),
     close: () => ipcRenderer.invoke('close'),
-    openDevTools: () => ipcRenderer.invoke('open-dev-tools'),
-    getHomeDirectory: () => ipcRenderer.invoke('get-home-directory'),
-    pathExists: (path) => ipcRenderer.invoke('path-exists', path),
-    driveList: () => ipcRenderer.invoke('drive-list'),
-    getUsername: () => ipcRenderer.invoke('username'),
-    isMaximized: () => ipcRenderer.invoke('is-maximized'),
-    showContextMenu: (event, file) => ipcRenderer.invoke('show-context-menu', { x: event.x, y: event.y, file }),
-
-    platform: process.platform,
-    ipcRenderer: {
-        on: (channel, func) => { ipcRenderer.on(channel, func); },
-        send: (channel, data) => { ipcRenderer.send(channel, data); }
-    }
+    getHomeDirectory: () => ipcRenderer.invoke('getHomeDirectory'),
+    openDevTools: () => ipcRenderer.invoke('openDevTools'),
+    openFile: (filePath) => ipcRenderer.invoke('openFile', filePath),
+    listFiles: (directoryPath) => ipcRenderer.invoke('listFiles', directoryPath),
+    pathExists: (filePath) => ipcRenderer.invoke('pathExists', filePath),
+    driveList: () => ipcRenderer.invoke('driveList'),
+    showContextMenu: (event, file) => ipcRenderer.send('show-context-menu', { event, file })
 });

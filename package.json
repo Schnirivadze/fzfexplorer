@@ -20,7 +20,8 @@
   "homepage": "https://github.com/Schnirivadze/fzfexplorer#readme",
   "dependencies": {
     "drivelist": "^12.0.2",
-    "fzf": "^0.5.2"
+    "fzf": "^0.5.2",
+    "nodejs-disks": "^0.2.1"
   },
   "devDependencies": {
     "electron": "^31.3.0",

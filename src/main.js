@@ -1,76 +1,66 @@
-const { app, BrowserWindow, ipcMain, Menu, MenuItem, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog, Menu } = require('electron');
+const fs = require('fs').promises;
 const path = require('path');
-const fs = require('fs');
 const os = require('os');
-const drivelist = require('drivelist');
-const { createContextMenu } = require('./contextMenu');
+// const { driveList } = require('nodejs-disks');
+const contextMenu = require('./contextMenu');
+const driveList = require('drivelist');
 
-function createWindow() {
-	const window = new BrowserWindow({
-		width: 800,
-		height: 600,
-		webPreferences: {
-			preload: path.join(__dirname, 'preload.js')
-		},
-		transparent: true,
-		frame: false,
-		'minHeight': 450,
-		'minWidth': 850,
-	});
+// Constants
+const isMac = process.platform === 'darwin';
+const homeDirectory = os.homedir();
 
-	window.loadFile(path.join(__dirname, 'pages/main/index.html'));
-
-	window.on('resize', () => {
-		window.webContents.send('window-resize');
-	});
-
-	setupIPCHandlers(window);
-}
-
-function setupIPCHandlers(window) {
-	ipcMain.handle('minimize', () => window.minimize());
-	ipcMain.handle('maximize', () => window.maximize());
-	ipcMain.handle('close', () => app.quit());
-	ipcMain.handle('open-dev-tools', () => { window.webContents.openDevTools() });
-	ipcMain.handle('path-exists', (event, path) => { return fs.existsSync(path) });
-	ipcMain.handle('drive-list', drivelist.list);
-	ipcMain.handle('username', () => { return os.userInfo().username });
-	ipcMain.handle('is-maximized', () => { return window.isMaximized() });
-	ipcMain.handle('list-files', async (event, directoryPath) => {
-		return fs.readdirSync(directoryPath).map(file => {
-			const filePath = path.join(directoryPath, file);
-			try {
-				return {
-					name: file,
-					path: filePath,
-					isDirectory: fs.statSync(filePath).isDirectory(),
-					stats: fs.statSync(filePath)
-				};
-			} catch (error) {
-				console.error(`Error reading info of ${filePath}`);
-			}
-		});
-	});
-	ipcMain.handle('open-file', async (event, filePath) => {
-		try {
-			await shell.openPath(filePath);
-		} catch (err) {
-			console.error('Error opening file:', err);
-		}
-	});
-	ipcMain.handle('get-home-directory', () => os.homedir());
-	ipcMain.handle('show-context-menu', (event, { x, y, file }) => {
-		const contextMenu = createContextMenu(file);
-		contextMenu.popup({
-			window: BrowserWindow.fromWebContents(event.sender),
-			x,
-			y
-		});
-	});
-}
-
-app.whenReady().then(createWindow);
-
-app.on('window-all-closed', function () {
-	if (process.platform !== 'darwin') app.quit();
+// Create the main window when the app is ready
+app.whenReady().then(() => {
+    createMainWindow();
+    app.on('activate', () => {
+        if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+    });
 });
+
+// Quit the app when all windows are closed
+app.on('window-all-closed', () => {
+    if (!isMac) app.quit();
+});
+
+// Create the main application window
+function createMainWindow() {
+    const mainWindow = new BrowserWindow({
+        width: 1280,
+        height: 720,
+        transparent: true,  // This should ensure transparency
+        frame: false,       // Disables the default window frame
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            enableRemoteModule: false,
+        }
+    });
+
+    mainWindow.loadFile('./src/pages/main/index.html');
+
+    // Open DevTools (optional)
+    // mainWindow.webContents.openDevTools();
+}
+
+// IPC Handlers
+ipcMain.handle('platform', () => process.platform);
+ipcMain.handle('minimize', (event) => BrowserWindow.fromWebContents(event.sender).minimize());
+ipcMain.handle('maximize', (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    window.isMaximized() ? window.unmaximize() : window.maximize();
+});
+ipcMain.handle('close', (event) => BrowserWindow.fromWebContents(event.sender).close());
+
+ipcMain.handle('getHomeDirectory', () => homeDirectory);
+ipcMain.handle('openDevTools', (event) => BrowserWindow.fromWebContents(event.sender).webContents.openDevTools());
+ipcMain.handle('openFile', (event, filePath) => shell.openPath(filePath));
+ipcMain.handle('listFiles', async (event, directoryPath) => await fs.readdir(directoryPath, { withFileTypes: true }).then(files => files.map(file => ({
+    name: file.name,
+    isDirectory: file.isDirectory(),
+    path: path.join(directoryPath, file.name)
+}))));
+ipcMain.handle('pathExists', async (event, filePath) => await fs.access(filePath).then(() => true).catch(() => false));
+ipcMain.handle('driveList', async () => await driveList.list());
+
+contextMenu.setupContextMenu(ipcMain);
